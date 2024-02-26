@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Windows 1 Emulator</title>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #008080;
+            color: white;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #window {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 200px;
+            border: 2px solid #000;
+            background-color: #fff;
+            overflow: hidden;
+        }
+
+        #title-bar {
+            height: 20px;
+            background-color: #008080;
+            padding: 5px;
+            text-align: center;
+            color: white;
+            user-select: none;
+            cursor: move;
+        }
+
+        #content {
+            padding: 10px;
+            user-select: text;
+        }
+
+        #close-button {
+            float: right;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="window">
+        <div id="title-bar">
+            Windows 1 Emulator
+            <span id="close-button" onclick="closeWindow()">X</span>
+        </div>
+        <div id="content">
+            Welcome to Windows 1 Emulator!
+        </div>
+    </div>
+
+    <script>
+        // Function to make the window draggable
+        dragElement(document.getElementById("window"));
+
+        function dragElement(elmnt) {
+            var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            if (document.getElementById(elmnt.id + "-title-bar")) {
+                // if present, the header is where you move the DIV from:
+                document.getElementById(elmnt.id + "-title-bar").onmousedown = dragMouseDown;
+            } else {
+                // otherwise, move the DIV from anywhere inside the DIV:
+                elmnt.onmousedown = dragMouseDown;
+            }
+
+            function dragMouseDown(e) {
+                e = e || window.event;
+                e.preventDefault();
+                // get the mouse cursor position at startup:
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                // call a function whenever the cursor moves:
+                document.onmousemove = elementDrag;
+            }
+
+            function elementDrag(e) {
+                e = e || window.event;
+                e.preventDefault();
+                // calculate the new cursor position:
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                // set the element's new position:
+                elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+                elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+            }
+
+            function closeDragElement() {
+                // stop moving when mouse button is released:
+                document.onmouseup = null;
+                document.onmousemove = null;
+            }
+        }
+
+        // Function to close the window
+        function closeWindow() {
+            document.getElementById("window").style.display = "none";
+        }
+    </script>
+</body>
+</html>
