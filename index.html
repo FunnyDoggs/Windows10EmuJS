@@ -160,6 +160,19 @@
         .add-file-input {
             display: none;
         }
+
+        .editor-window {
+            width: 600px;
+            height: 400px;
+        }
+
+        .editor {
+            width: 100%;
+            height: calc(100% - 30px);
+            border: 1px solid #ccc;
+            padding: 5px;
+            overflow: auto;
+        }
     </style>
 </head>
 <body>
@@ -235,8 +248,9 @@
                 this.initResize = (e) => {
                     e.preventDefault();
                     this.isResizing = true;
-                    this.offsetX = e.clientX - this.windowElement.getBoundingClientRect().width;
-                    this.offsetY = e.clientY - this.windowElement.getBoundingClientRect().height;
+                    this.offsetX = e.clientX - this.windowElement.getBoundingClientRect().right;
+                    this.offsetY = e.clientY - this.windowElement.getBoundingClientRect().bottom;
+
                     document.addEventListener('mousemove', (e) => this.handleMouseMove(e));
                     document.addEventListener('mouseup', () => this.stopResize());
                 };
@@ -256,6 +270,46 @@
                     document.removeEventListener('mouseup', () => this.stopResize());
                 };
             }
+        }
+
+        // Function to close the window
+        function closeWindow(element) {
+            const windowElement = element.closest('.window');
+            windowElement.style.display = "none";
+        }
+
+        // Function to open a browser window
+        function openBrowser() {
+            const browserWindow = new Window("Browser", "", 800, 500);
+            const browserContent = document.createElement("div");
+            browserContent.className = "browser-content";
+            const browserBar = document.createElement("div");
+            browserBar.className = "browser-bar";
+            const urlInput = document.createElement("input");
+            urlInput.type = "text";
+            urlInput.className = "url-input";
+            urlInput.placeholder = "Enter URL and press Enter";
+            urlInput.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") {
+                    const url = urlInput.value.trim();
+                    if (url !== "") {
+                        const frame = document.createElement("iframe");
+                        frame.className = "browser-frame";
+                        frame.src = url;
+                        browserContent.innerHTML = "";
+                        browserContent.appendChild(frame);
+                    }
+                }
+            });
+            browserBar.appendChild(urlInput);
+            browserContent.appendChild(browserBar);
+            browserWindow.contentElement.appendChild(browserContent);
+        }
+
+        // Function to open a file explorer window
+        function openFileExplorer() {
+            const explorerWindow = new ExplorerWindow("File Explorer", "", 600, 400);
+            windows.push(explorerWindow);
         }
 
         class ExplorerWindow extends Window {
@@ -333,48 +387,24 @@
             }
         }
 
+        class TextEditorWindow extends Window {
+            constructor(title, content, width, height) {
+                super(title, content, width, height);
+                this.editor = document.createElement("textarea");
+                this.editor.className = "editor";
+                this.contentElement.appendChild(this.editor);
+            }
+        }
+
         // Create windows using an array
         const windows = [];
 
-        // Function to close the window
-        function closeWindow(element) {
-            const windowElement = element.closest('.window');
-            windowElement.style.display = "none";
+        // Function to open a text editor window
+        function openTextEditor() {
+            const textEditorWindow = new TextEditorWindow("Text Editor", "", 600, 400);
+            windows.push(textEditorWindow);
         }
 
-        // Function to open a browser window
-        function openBrowser() {
-            const browserWindow = new Window("Browser", "", 800, 500);
-            const browserContent = document.createElement("div");
-            browserContent.className = "browser-content";
-            const browserBar = document.createElement("div");
-            browserBar.className = "browser-bar";
-            const urlInput = document.createElement("input");
-            urlInput.type = "text";
-            urlInput.className = "url-input";
-            urlInput.placeholder = "Enter URL and press Enter";
-            urlInput.addEventListener("keydown", (e) => {
-                if (e.key === "Enter") {
-                    const url = urlInput.value.trim();
-                    if (url !== "") {
-                        const frame = document.createElement("iframe");
-                        frame.className = "browser-frame";
-                        frame.src = url;
-                        browserContent.innerHTML = "";
-                        browserContent.appendChild(frame);
-                    }
-                }
-            });
-            browserBar.appendChild(urlInput);
-            browserContent.appendChild(browserBar);
-            browserWindow.contentElement.appendChild(browserContent);
-        }
-
-        // Function to open a file explorer window
-        function openFileExplorer() {
-            const explorerWindow = new ExplorerWindow("File Explorer", "", 600, 400);
-            windows.push(explorerWindow);
-        }
     </script>
 
     <!-- Launcher Icons -->
@@ -385,5 +415,10 @@
     <div class="launcher-icon" onclick="openFileExplorer()">
         <img src="https://img.icons8.com/windows/96/000000/file.png" alt="File Explorer Icon">
     </div>
+
+    <div class="launcher-icon" onclick="openTextEditor()">
+        <img src="https://img.icons8.com/windows/96/000000/edit-file.png" alt="Text Editor Icon">
+    </div>
+
 </body>
 </html>
