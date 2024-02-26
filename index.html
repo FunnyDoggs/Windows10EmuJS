@@ -5,36 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Windows 1 Emulator</title>
     <style>
-        /* Existing styles... */
-
-        #start-button {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            cursor: pointer;
-            padding: 5px;
+        body {
+            font-family: 'Courier New', Courier, monospace;
             background-color: #008080;
             color: white;
-            border: 1px solid #000;
-            border-radius: 3px;
+            margin: 0;
+            overflow: hidden;
         }
 
-        #start-menu {
-            display: none;
+        #window {
             position: absolute;
-            bottom: 40px;
-            left: 10px;
-            width: 150px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 200px;
+            border: 2px solid #000;
             background-color: #fff;
-            border: 1px solid #000;
-            border-radius: 3px;
-            padding: 5px;
+            overflow: hidden;
         }
 
-        .start-menu-item {
+        #title-bar {
+            height: 20px;
+            background-color: #008080;
             padding: 5px;
-            cursor: pointer;
+            text-align: center;
+            color: white;
             user-select: none;
+            cursor: move;
+        }
+
+        #content {
+            padding: 10px;
+            user-select: text;
+        }
+
+        #close-button {
+            float: right;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -49,37 +57,54 @@
         </div>
     </div>
 
-    <div id="start-button" onclick="toggleStartMenu()">Start</div>
-    <div id="start-menu">
-        <div class="start-menu-item" onclick="openFileExplorer()">File Explorer</div>
-        <!-- Add more items as needed -->
-    </div>
-
     <script>
-        // Existing script...
+        // Function to make the window draggable
+        dragElement(document.getElementById("window"));
 
-        function toggleStartMenu() {
-            var startMenu = document.getElementById("start-menu");
-            startMenu.style.display = (startMenu.style.display === "block") ? "none" : "block";
+        function dragElement(elmnt) {
+            var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            if (document.getElementById(elmnt.id + "-title-bar")) {
+                // if present, the header is where you move the DIV from:
+                document.getElementById(elmnt.id + "-title-bar").onmousedown = dragMouseDown;
+            } else {
+                // otherwise, move the DIV from anywhere inside the DIV:
+                elmnt.onmousedown = dragMouseDown;
+            }
+
+            function dragMouseDown(e) {
+                e = e || window.event;
+                e.preventDefault();
+                // get the mouse cursor position at startup:
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                // call a function whenever the cursor moves:
+                document.onmousemove = elementDrag;
+            }
+
+            function elementDrag(e) {
+                e = e || window.event;
+                e.preventDefault();
+                // calculate the new cursor position:
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                // set the element's new position:
+                elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+                elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+            }
+
+            function closeDragElement() {
+                // stop moving when mouse button is released:
+                document.onmouseup = null;
+                document.onmousemove = null;
+            }
         }
 
-        function openFileExplorer() {
-            var fileExplorer = document.createElement("div");
-            fileExplorer.id = "file-explorer";
-            fileExplorer.style.position = "absolute";
-            fileExplorer.style.top = "50%";
-            fileExplorer.style.left = "50%";
-            fileExplorer.style.transform = "translate(-50%, -50%)";
-            fileExplorer.style.width = "400px";
-            fileExplorer.style.height = "300px";
-            fileExplorer.style.border = "2px solid #000";
-            fileExplorer.style.backgroundColor = "#fff";
-            fileExplorer.innerHTML = "<div id='file-explorer-title-bar'>File Explorer</div><div id='file-explorer-content'>This is the file explorer content.</div>";
-            
-            document.body.appendChild(fileExplorer);
-
-            // Make the file explorer draggable
-            dragElement(fileExplorer);
+        // Function to close the window
+        function closeWindow() {
+            document.getElementById("window").style.display = "none";
         }
     </script>
 </body>
