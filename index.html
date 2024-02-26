@@ -81,9 +81,10 @@
             width: 100%;
             background-color: #0078d4;
             display: flex;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
             height: 30px;
+            z-index: 1; /* Ensure taskbar is on top */
         }
 
         .taskbar-icon {
@@ -229,9 +230,9 @@
                 this.titleBar.className = "title-bar";
                 this.titleBar.innerHTML = `
                     <span>${this.title}</span>
-                    <span class="minimize-button" onclick="this.parentElement.parentElement.style.display='none'">-</span>
+                    <span class="minimize-button" onclick="minimizeWindow(this.parentElement.parentElement)">-</span>
                     <span class="maximize-button" onclick="toggleMaximize(this.parentElement.parentElement)">□</span>
-                    <span class="close-button" onclick="this.parentElement.parentElement.style.display='none'">X</span>`;
+                    <span class="close-button" onclick="closeWindow(this.parentElement.parentElement)">X</span>`;
                 this.windowElement.appendChild(this.titleBar);
 
                 this.contentElement = document.createElement("div");
@@ -297,6 +298,28 @@
                     document.removeEventListener('mousemove', (e) => this.handleMouseMove(e));
                     document.removeEventListener('mouseup', () => this.stopResize());
                 };
+            }
+
+            toggleMaximize() {
+                this.isMaximized ? this.restoreSize() : this.maximize();
+            }
+
+            maximize() {
+                this.savedLeft = this.windowElement.style.left;
+                this.savedTop = this.windowElement.style.top;
+                this.windowElement.style.left = "0";
+                this.windowElement.style.top = "0";
+                this.windowElement.style.width = "100%";
+                this.windowElement.style.height = "100%";
+                this.isMaximized = true;
+            }
+
+            restoreSize() {
+                this.windowElement.style.left = this.savedLeft;
+                this.windowElement.style.top = this.savedTop;
+                this.windowElement.style.width = this.savedWidth;
+                this.windowElement.style.height = this.savedHeight;
+                this.isMaximized = false;
             }
         }
 
@@ -393,6 +416,12 @@
             windowElement.style.display = "none";
         }
 
+        // Function to minimize the window
+        function minimizeWindow(element) {
+            const windowElement = element.closest('.window');
+            windowElement.style.display = "none";
+        }
+
         // Function to open a browser window
         function openBrowser() {
             const browserWindow = new Window("Browser", "", 800, 500);
@@ -455,6 +484,10 @@
     </div>
 
     <!-- Taskbar -->
-    <div class="taskbar"></div>
+    <div class="taskbar">
+        <span class="taskbar-icon" onclick="openBrowser()">Browser</span>
+        <span class="taskbar-icon" onclick="openFileExplorer()">File Explorer</span>
+        <span class="taskbar-icon" onclick="openTextEditor()">Text Editor</span>
+    </div>
 </body>
 </html>
