@@ -32,6 +32,9 @@
             cursor: move;
             border-top-left-radius: 5px;
             border-top-right-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .content {
@@ -42,7 +45,6 @@
         }
 
         .close-button {
-            float: right;
             cursor: pointer;
             color: white;
         }
@@ -85,6 +87,9 @@
             cursor: move;
             border-top-left-radius: 5px;
             border-top-right-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
         .browser-content {
@@ -96,6 +101,14 @@
             width: 100%;
             height: 100%;
             border: none;
+        }
+
+        .url-input {
+            width: 70%;
+            padding: 3px;
+            margin-right: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
         }
     </style>
 </head>
@@ -125,7 +138,8 @@
 
                 this.titleBar = document.createElement("div");
                 this.titleBar.className = "title-bar";
-                this.titleBar.innerHTML = `${this.title}
+                this.titleBar.innerHTML = `
+                    <span>${this.title}</span>
                     <span class="close-button" onclick="closeWindow(this)">X</span>`;
                 this.windowElement.appendChild(this.titleBar);
 
@@ -197,23 +211,37 @@
         // Create windows using an array
         const windows = [];
 
-        // Add windows to the array
-        windows.push(new Window("Window 1", "Content of Window 1", 300, 200));
-        windows.push(new Window("Window 2", "Content of Window 2", 400, 250));
-
         // Function to close the window
         function closeWindow(element) {
             const windowElement = element.closest('.window');
             windowElement.style.display = "none";
         }
 
-        // Launcher icon click event
+        // Function to open a browser window
         function openBrowser() {
             const browserWindow = new Window("Browser", "", 800, 500);
             const browserContent = document.createElement("div");
             browserContent.className = "browser-content";
-            browserContent.innerHTML = `
-                <iframe class="browser-frame" src="https://www.example.com"></iframe>`;
+            const browserBar = document.createElement("div");
+            browserBar.className = "browser-bar";
+            const urlInput = document.createElement("input");
+            urlInput.type = "text";
+            urlInput.className = "url-input";
+            urlInput.placeholder = "Enter URL and press Enter";
+            urlInput.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") {
+                    const url = urlInput.value.trim();
+                    if (url !== "") {
+                        const frame = document.createElement("iframe");
+                        frame.className = "browser-frame";
+                        frame.src = url;
+                        browserContent.innerHTML = "";
+                        browserContent.appendChild(frame);
+                    }
+                }
+            });
+            browserBar.appendChild(urlInput);
+            browserContent.appendChild(browserBar);
             browserWindow.contentElement.appendChild(browserContent);
         }
     </script>
