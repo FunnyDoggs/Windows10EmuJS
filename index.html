@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: limegreen; /* Changed the background color to lime green */
+            background-color: limegreen;
             color: #000;
             margin: 0;
             overflow: hidden;
@@ -49,7 +49,8 @@
         .maximize-button {
             cursor: pointer;
             color: white;
-            margin: 0 5px; /* Adjusted margin */
+            margin: 0 5px;
+            font-size: 18px;
         }
 
         .resizable-handle {
@@ -228,9 +229,9 @@
                 this.titleBar.className = "title-bar";
                 this.titleBar.innerHTML = `
                     <span>${this.title}</span>
-                    <span class="minimize-button" onclick="minimizeWindow(this)">_</span>
-                    <span class="maximize-button" onclick="toggleMaximize(this)">□</span>
-                    <span class="close-button" onclick="closeWindow(this)">X</span>`;
+                    <span class="minimize-button" onclick="this.parentElement.parentElement.style.display='none'">-</span>
+                    <span class="maximize-button" onclick="toggleMaximize(this.parentElement.parentElement)">□</span>
+                    <span class="close-button" onclick="this.parentElement.parentElement.style.display='none'">X</span>`;
                 this.windowElement.appendChild(this.titleBar);
 
                 this.contentElement = document.createElement("div");
@@ -296,52 +297,6 @@
                     document.removeEventListener('mousemove', (e) => this.handleMouseMove(e));
                     document.removeEventListener('mouseup', () => this.stopResize());
                 };
-            }
-
-            minimizeWindow() {
-                this.windowElement.style.display = "none";
-                this.addToTaskbar();
-            }
-
-            addToTaskbar() {
-                const taskbarIcon = document.createElement("div");
-                taskbarIcon.className = "taskbar-icon";
-                taskbarIcon.textContent = this.title;
-                taskbarIcon.onclick = () => this.restoreWindow();
-                document.querySelector('.taskbar').appendChild(taskbarIcon);
-            }
-
-            restoreWindow() {
-                this.windowElement.style.display = "block";
-                this.removeFromTaskbar();
-            }
-
-            removeFromTaskbar() {
-                const taskbar = document.querySelector('.taskbar');
-                const taskbarIcons = taskbar.querySelectorAll('.taskbar-icon');
-                taskbarIcons.forEach(icon => icon.remove());
-            }
-
-            toggleMaximize() {
-                this.isMaximized ? this.restoreSize() : this.maximize();
-            }
-
-            maximize() {
-                this.savedLeft = this.windowElement.style.left;
-                this.savedTop = this.windowElement.style.top;
-                this.windowElement.style.left = "0";
-                this.windowElement.style.top = "0";
-                this.windowElement.style.width = "100%";
-                this.windowElement.style.height = "100%";
-                this.isMaximized = true;
-            }
-
-            restoreSize() {
-                this.windowElement.style.left = this.savedLeft;
-                this.windowElement.style.top = this.savedTop;
-                this.windowElement.style.width = this.savedWidth;
-                this.windowElement.style.height = this.savedHeight;
-                this.isMaximized = false;
             }
         }
 
@@ -476,6 +431,13 @@
         function openTextEditor() {
             const textEditorWindow = new TextEditorWindow("Text Editor", "", 600, 400);
             windows.push(textEditorWindow);
+        }
+
+        function toggleMaximize(windowElement) {
+            const window = windows.find(w => w.windowElement === windowElement);
+            if (window) {
+                window.toggleMaximize();
+            }
         }
     </script>
 
