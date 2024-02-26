@@ -110,6 +110,56 @@
             border: 1px solid #ccc;
             border-radius: 3px;
         }
+
+        .explorer-window {
+            width: 600px;
+            height: 400px;
+        }
+
+        .file-explorer {
+            display: flex;
+            flex-direction: column;
+            height: calc(100% - 30px);
+        }
+
+        .file-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 5px;
+            border: 1px solid #ccc;
+            margin-bottom: 5px;
+        }
+
+        .file-item {
+            padding: 5px;
+            border-bottom: 1px solid #ddd;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .file-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        .file-content {
+            flex: 1;
+            overflow: auto;
+            padding: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .add-file-button {
+            background-color: #0078d4;
+            color: white;
+            padding: 5px;
+            cursor: pointer;
+            border: none;
+            border-radius: 3px;
+        }
+
+        .add-file-input {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -208,6 +258,81 @@
             }
         }
 
+        class ExplorerWindow extends Window {
+            constructor(title, content, width, height) {
+                super(title, content, width, height);
+                this.files = [];
+            }
+
+            createWindow() {
+                super.createWindow();
+
+                const fileExplorer = document.createElement("div");
+                fileExplorer.className = "file-explorer";
+                this.contentElement.appendChild(fileExplorer);
+
+                const fileList = document.createElement("div");
+                fileList.className = "file-list";
+                fileExplorer.appendChild(fileList);
+
+                const fileContent = document.createElement("div");
+                fileContent.className = "file-content";
+                fileExplorer.appendChild(fileContent);
+
+                const addFileButton = document.createElement("button");
+                addFileButton.className = "add-file-button";
+                addFileButton.textContent = "Add File";
+                addFileButton.onclick = () => this.addFile();
+                fileExplorer.appendChild(addFileButton);
+
+                const addFileInput = document.createElement("input");
+                addFileInput.type = "file";
+                addFileInput.className = "add-file-input";
+                addFileInput.onchange = (e) => this.readFile(e);
+                fileExplorer.appendChild(addFileInput);
+
+                this.updateFileList();
+            }
+
+            addFile() {
+                const addFileInput = this.windowElement.querySelector('.add-file-input');
+                addFileInput.click();
+            }
+
+            readFile(event) {
+                const input = event.target;
+                const file = input.files[0];
+
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const content = e.target.result;
+                        this.files.push({ name: file.name, content });
+                        this.updateFileList();
+                    };
+                    reader.readAsText(file);
+                }
+            }
+
+            updateFileList() {
+                const fileList = this.windowElement.querySelector('.file-list');
+                fileList.innerHTML = "";
+
+                this.files.forEach((file, index) => {
+                    const fileItem = document.createElement("div");
+                    fileItem.className = "file-item";
+                    fileItem.textContent = file.name;
+                    fileItem.onclick = () => this.displayFileContent(index);
+                    fileList.appendChild(fileItem);
+                });
+            }
+
+            displayFileContent(index) {
+                const fileContent = this.windowElement.querySelector('.file-content');
+                fileContent.textContent = this.files[index].content;
+            }
+        }
+
         // Create windows using an array
         const windows = [];
 
@@ -244,11 +369,21 @@
             browserContent.appendChild(browserBar);
             browserWindow.contentElement.appendChild(browserContent);
         }
+
+        // Function to open a file explorer window
+        function openFileExplorer() {
+            const explorerWindow = new ExplorerWindow("File Explorer", "", 600, 400);
+            windows.push(explorerWindow);
+        }
     </script>
 
-    <!-- Launcher Icon -->
+    <!-- Launcher Icons -->
     <div class="launcher-icon" onclick="openBrowser()">
         <img src="https://img.icons8.com/windows/96/000000/internet.png" alt="Browser Icon">
+    </div>
+
+    <div class="launcher-icon" onclick="openFileExplorer()">
+        <img src="https://img.icons8.com/windows/96/000000/file.png" alt="File Explorer Icon">
     </div>
 </body>
 </html>
