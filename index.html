@@ -6,9 +6,9 @@
     <title>Windows 1 Emulator</title>
     <style>
         body {
-            font-family: 'Courier New', Courier, monospace;
-            background-color: #008080;
-            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f0f0;
+            color: #000;
             margin: 0;
             overflow: hidden;
         }
@@ -16,86 +16,56 @@
         .window {
             position: absolute;
             overflow: hidden;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            background-color: #fff;
+            border-radius: 5px;
+            border: 1px solid #ccc;
         }
 
         .title-bar {
-            height: 20px;
-            background-color: #008080;
+            height: 30px;
+            background-color: #0078d4;
             padding: 5px;
             text-align: center;
             color: white;
             user-select: none;
             cursor: move;
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
         }
 
         .content {
             padding: 10px;
             user-select: text;
-            color: #000; /* Improved text color for readability */
+            color: #000;
         }
 
         .close-button {
             float: right;
             cursor: pointer;
+            color: white;
         }
 
         /* Resizable handle */
         .resizable-handle {
-            width: 20px;
-            height: 20px;
-            background-color: #008080;
+            width: 10px;
+            height: 10px;
+            background-color: #0078d4;
             position: absolute;
             bottom: 0;
             right: 0;
             cursor: se-resize;
-        }
-
-        /* Old styles for Windows 1 appearance */
-        .window {
-            width: 300px;
-            height: 200px;
-            border: 2px solid #000;
-            background-color: #fff;
-            border-radius: 0;
-        }
-
-        .resizable-handle {
-            width: 10px;
-            height: 10px;
-        }
-
-        /* Windows 10-like styles */
-        .window.windows-10 {
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-            border-radius: 5px;
-            background-color: #f0f0f0;
-        }
-
-        .title-bar.windows-10 {
-            background-color: #0078d4;
-            color: white;
-            border-top-left-radius: 5px;
-            border-top-right-radius: 5px;
-        }
-
-        .close-button.windows-10 {
-            color: white;
-        }
-
-        .resizable-handle.windows-10 {
-            background-color: #0078d4;
         }
     </style>
 </head>
 <body>
     <script>
         class Window {
-            constructor(title, content, width, height, isWindows10 = false) {
+            constructor(title, content, width, height) {
                 this.title = title;
                 this.content = content;
                 this.width = width;
                 this.height = height;
-                this.isWindows10 = isWindows10;
                 this.isResizing = false;
                 this.offsetX = 0;
                 this.offsetY = 0;
@@ -107,15 +77,15 @@
 
             createWindow() {
                 this.windowElement = document.createElement("div");
-                this.windowElement.className = `window ${this.isWindows10 ? 'windows-10' : ''}`;
+                this.windowElement.className = "window";
                 this.windowElement.style.width = `${this.width}px`;
                 this.windowElement.style.height = `${this.height}px`;
                 document.body.appendChild(this.windowElement);
 
                 this.titleBar = document.createElement("div");
-                this.titleBar.className = `title-bar ${this.isWindows10 ? 'windows-10' : ''}`;
+                this.titleBar.className = "title-bar";
                 this.titleBar.innerHTML = `${this.title}
-                    <span class="close-button ${this.isWindows10 ? 'windows-10' : ''}" onclick="closeWindow(this)">X</span>`;
+                    <span class="close-button" onclick="closeWindow(this)">X</span>`;
                 this.windowElement.appendChild(this.titleBar);
 
                 this.contentElement = document.createElement("div");
@@ -124,7 +94,7 @@
                 this.windowElement.appendChild(this.contentElement);
 
                 this.resizableHandle = document.createElement("div");
-                this.resizableHandle.className = `resizable-handle ${this.isWindows10 ? 'windows-10' : ''}`;
+                this.resizableHandle.className = "resizable-handle";
                 this.resizableHandle.onmousedown = (e) => this.initResize(e);
                 this.windowElement.appendChild(this.resizableHandle);
             }
@@ -185,7 +155,7 @@
 
         // Create windows
         const window1 = new Window("Window 1", "Content of Window 1", 300, 200);
-        const window2 = new Window("Window 2", "Content of Window 2", 400, 250, true);
+        const window2 = new Window("Window 2", "Content of Window 2", 400, 250);
 
         // Function to close the window
         function closeWindow(element) {
