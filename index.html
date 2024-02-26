@@ -44,12 +44,14 @@
             height: calc(100% - 30px);
         }
 
-        .close-button {
+        .close-button,
+        .minimize-button,
+        .maximize-button {
             cursor: pointer;
             color: white;
+            margin-right: 5px;
         }
 
-        /* Resizable handle */
         .resizable-handle {
             width: 10px;
             height: 10px;
@@ -69,6 +71,22 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            cursor: pointer;
+        }
+
+        .taskbar {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background-color: #0078d4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 30px;
+        }
+
+        .taskbar-icon {
+            margin: 0 5px;
             cursor: pointer;
         }
 
@@ -186,6 +204,11 @@
                 this.isResizing = false;
                 this.offsetX = 0;
                 this.offsetY = 0;
+                this.isMaximized = false;
+                this.savedLeft = 0;
+                this.savedTop = 0;
+                this.savedWidth = `${width}px`;
+                this.savedHeight = `${height}px`;
 
                 this.createWindow();
                 this.makeDraggable();
@@ -197,12 +220,16 @@
                 this.windowElement.className = "window";
                 this.windowElement.style.width = `${this.width}px`;
                 this.windowElement.style.height = `${this.height}px`;
+                this.windowElement.style.left = `${(window.innerWidth - this.width) / 2}px`;
+                this.windowElement.style.top = `${(window.innerHeight - this.height) / 2}px`;
                 document.body.appendChild(this.windowElement);
 
                 this.titleBar = document.createElement("div");
                 this.titleBar.className = "title-bar";
                 this.titleBar.innerHTML = `
                     <span>${this.title}</span>
+                    <span class="minimize-button" onclick="minimizeWindow(this)">_</span>
+                    <span class="maximize-button" onclick="toggleMaximize(this)">□</span>
                     <span class="close-button" onclick="closeWindow(this)">X</span>`;
                 this.windowElement.appendChild(this.titleBar);
 
@@ -270,46 +297,52 @@
                     document.removeEventListener('mouseup', () => this.stopResize());
                 };
             }
-        }
 
-        // Function to close the window
-        function closeWindow(element) {
-            const windowElement = element.closest('.window');
-            windowElement.style.display = "none";
-        }
+            minimizeWindow() {
+                this.windowElement.style.display = "none";
+                this.addToTaskbar();
+            }
 
-        // Function to open a browser window
-        function openBrowser() {
-            const browserWindow = new Window("Browser", "", 800, 500);
-            const browserContent = document.createElement("div");
-            browserContent.className = "browser-content";
-            const browserBar = document.createElement("div");
-            browserBar.className = "browser-bar";
-            const urlInput = document.createElement("input");
-            urlInput.type = "text";
-            urlInput.className = "url-input";
-            urlInput.placeholder = "Enter URL and press Enter";
-            urlInput.addEventListener("keydown", (e) => {
-                if (e.key === "Enter") {
-                    const url = urlInput.value.trim();
-                    if (url !== "") {
-                        const frame = document.createElement("iframe");
-                        frame.className = "browser-frame";
-                        frame.src = url;
-                        browserContent.innerHTML = "";
-                        browserContent.appendChild(frame);
-                    }
-                }
-            });
-            browserBar.appendChild(urlInput);
-            browserContent.appendChild(browserBar);
-            browserWindow.contentElement.appendChild(browserContent);
-        }
+            addToTaskbar() {
+                const taskbarIcon = document.createElement("div");
+                taskbarIcon.className = "taskbar-icon";
+                taskbarIcon.textContent = this.title;
+                taskbarIcon.onclick = () => this.restoreWindow();
+                document.querySelector('.taskbar').appendChild(taskbarIcon);
+            }
 
-        // Function to open a file explorer window
-        function openFileExplorer() {
-            const explorerWindow = new ExplorerWindow("File Explorer", "", 600, 400);
-            windows.push(explorerWindow);
+            restoreWindow() {
+                this.windowElement.style.display = "block";
+                this.removeFromTaskbar();
+            }
+
+            removeFromTaskbar() {
+                const taskbar = document.querySelector('.taskbar');
+                const taskbarIcons = taskbar.querySelectorAll('.taskbar-icon');
+                taskbarIcons.forEach(icon => icon.remove());
+            }
+
+            toggleMaximize() {
+                this.isMaximized ? this.restoreSize() : this.maximize();
+            }
+
+            maximize() {
+                this.savedLeft = this.windowElement.style.left;
+                this.savedTop = this.windowElement.style.top;
+                this.windowElement.style.left = "0";
+                this.windowElement.style.top = "0";
+                this.windowElement.style.width = "100%";
+                this.windowElement.style.height = "100%";
+                this.isMaximized = true;
+            }
+
+            restoreSize() {
+                this.windowElement.style.left = this.savedLeft;
+                this.windowElement.style.top = this.savedTop;
+                this.windowElement.style.width = this.savedWidth;
+                this.windowElement.style.height = this.savedHeight;
+                this.isMaximized = false;
+            }
         }
 
         class ExplorerWindow extends Window {
@@ -399,12 +432,51 @@
         // Create windows using an array
         const windows = [];
 
+        // Function to close the window
+        function closeWindow(element) {
+            const windowElement = element.closest('.window');
+            windowElement.style.display = "none";
+        }
+
+        // Function to open a browser window
+        function openBrowser() {
+            const browserWindow = new Window("Browser", "", 800, 500);
+            const browserContent = document.createElement("div");
+            browserContent.className = "browser-content";
+            const browserBar = document.createElement("div");
+            browserBar.className = "browser-bar";
+            const urlInput = document.createElement("input");
+            urlInput.type = "text";
+            urlInput.className = "url-input";
+            urlInput.placeholder = "Enter URL and press Enter";
+            urlInput.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") {
+                    const url = urlInput.value.trim();
+                    if (url !== "") {
+                        const frame = document.createElement("iframe");
+                        frame.className = "browser-frame";
+                        frame.src = url;
+                        browserContent.innerHTML = "";
+                        browserContent.appendChild(frame);
+                    }
+                }
+            });
+            browserBar.appendChild(urlInput);
+            browserContent.appendChild(browserBar);
+            browserWindow.contentElement.appendChild(browserContent);
+        }
+
+        // Function to open a file explorer window
+        function openFileExplorer() {
+            const explorerWindow = new ExplorerWindow("File Explorer", "", 600, 400);
+            windows.push(explorerWindow);
+        }
+
         // Function to open a text editor window
         function openTextEditor() {
             const textEditorWindow = new TextEditorWindow("Text Editor", "", 600, 400);
             windows.push(textEditorWindow);
         }
-
     </script>
 
     <!-- Launcher Icons -->
@@ -420,5 +492,7 @@
         <img src="https://img.icons8.com/windows/96/000000/edit-file.png" alt="Text Editor Icon">
     </div>
 
+    <!-- Taskbar -->
+    <div class="taskbar"></div>
 </body>
 </html>
