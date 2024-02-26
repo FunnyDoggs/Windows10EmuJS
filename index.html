@@ -13,19 +13,12 @@
             overflow: hidden;
         }
 
-        #window {
+        .window {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 300px;
-            height: 200px;
-            border: 2px solid #000;
-            background-color: #fff;
             overflow: hidden;
         }
 
-        #title-bar {
+        .title-bar {
             height: 20px;
             background-color: #008080;
             padding: 5px;
@@ -35,18 +28,18 @@
             cursor: move;
         }
 
-        #content {
+        .content {
             padding: 10px;
             user-select: text;
         }
 
-        #close-button {
+        .close-button {
             float: right;
             cursor: pointer;
         }
 
         /* Resizable handle */
-        #resizable-handle {
+        .resizable-handle {
             width: 10px;
             height: 10px;
             background-color: #008080;
@@ -58,102 +51,112 @@
     </style>
 </head>
 <body>
-    <div id="window">
-        <div id="title-bar">
-            Windows 1 Emulator
-            <span id="close-button" onclick="closeWindow()">X</span>
-        </div>
-        <div id="content">
-            Welcome to Windows 1 Emulator!
-        </div>
-        <div id="resizable-handle" onmousedown="initResize(event)"></div>
-    </div>
-
     <script>
-        // Function to make the window draggable
-        dragElement(document.getElementById("window"));
+        class Window {
+            constructor(title, content, width, height) {
+                this.title = title;
+                this.content = content;
+                this.width = width;
+                this.height = height;
+                this.isResizing = false;
 
-        // Variables to control resizing
-        let isResizing = false;
-
-        // Function to initialize resizing
-        function initResize(e) {
-            e.preventDefault();
-            isResizing = true;
-            document.addEventListener('mousemove', handleMouseMove);
-            document.addEventListener('mouseup', stopResize);
-        }
-
-        // Function to handle mouse movement during resizing
-        function handleMouseMove(e) {
-            if (isResizing) {
-                const windowElement = document.getElementById("window");
-                const offsetX = e.clientX - windowElement.offsetLeft;
-                const offsetY = e.clientY - windowElement.offsetTop;
-
-                const newWidth = Math.max(200, e.clientX - windowElement.offsetLeft + offsetX);
-                const newHeight = Math.max(150, e.clientY - windowElement.offsetTop + offsetY);
-
-                windowElement.style.width = newWidth + 'px';
-                windowElement.style.height = newHeight + 'px';
-            }
-        }
-
-        // Function to stop resizing
-        function stopResize() {
-            isResizing = false;
-            document.removeEventListener('mousemove', handleMouseMove);
-            document.removeEventListener('mouseup', stopResize);
-        }
-
-        function dragElement(elmnt) {
-            var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-            if (document.getElementById(elmnt.id + "-title-bar")) {
-                // if present, the header is where you move the DIV from:
-                document.getElementById(elmnt.id + "-title-bar").onmousedown = dragMouseDown;
-            } else {
-                // otherwise, move the DIV from anywhere inside the DIV:
-                elmnt.onmousedown = dragMouseDown;
+                this.createWindow();
+                this.makeDraggable();
+                this.makeResizable();
             }
 
-            function dragMouseDown(e) {
-                if (!isResizing) {
+            createWindow() {
+                this.windowElement = document.createElement("div");
+                this.windowElement.className = "window";
+                this.windowElement.style.width = `${this.width}px`;
+                this.windowElement.style.height = `${this.height}px`;
+                document.body.appendChild(this.windowElement);
+
+                this.titleBar = document.createElement("div");
+                this.titleBar.className = "title-bar";
+                this.titleBar.innerHTML = `${this.title}
+                    <span class="close-button" onclick="closeWindow(this)">X</span>`;
+                this.windowElement.appendChild(this.titleBar);
+
+                this.contentElement = document.createElement("div");
+                this.contentElement.className = "content";
+                this.contentElement.innerHTML = this.content;
+                this.windowElement.appendChild(this.contentElement);
+
+                this.resizableHandle = document.createElement("div");
+                this.resizableHandle.className = "resizable-handle";
+                this.resizableHandle.onmousedown = (e) => this.initResize(e);
+                this.windowElement.appendChild(this.resizableHandle);
+            }
+
+            makeDraggable() {
+                this.windowElement.onmousedown = (e) => this.dragMouseDown(e);
+
+                this.dragMouseDown = (e) => {
                     e = e || window.event;
                     e.preventDefault();
-                    // get the mouse cursor position at startup:
-                    pos3 = e.clientX;
-                    pos4 = e.clientY;
-                    document.onmouseup = closeDragElement;
-                    // call a function whenever the cursor moves:
-                    document.onmousemove = elementDrag;
-                }
-            }
+                    this.pos3 = e.clientX;
+                    this.pos4 = e.clientY;
+                    document.onmouseup = () => this.closeDragElement();
+                    document.onmousemove = (e) => this.elementDrag(e);
+                };
 
-            function elementDrag(e) {
-                if (!isResizing) {
+                this.elementDrag = (e) => {
                     e = e || window.event;
                     e.preventDefault();
-                    // calculate the new cursor position:
-                    pos1 = pos3 - e.clientX;
-                    pos2 = pos4 - e.clientY;
-                    pos3 = e.clientX;
-                    pos4 = e.clientY;
-                    // set the element's new position:
-                    elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
-                    elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
-                }
+                    this.pos1 = this.pos3 - e.clientX;
+                    this.pos2 = this.pos4 - e.clientY;
+                    this.pos3 = e.clientX;
+                    this.pos4 = e.clientY;
+                    this.windowElement.style.top = (this.windowElement.offsetTop - this.pos2) + "px";
+                    this.windowElement.style.left = (this.windowElement.offsetLeft - this.pos1) + "px";
+                };
+
+                this.closeDragElement = () => {
+                    document.onmouseup = null;
+                    document.onmousemove = null;
+                };
             }
 
-            function closeDragElement() {
-                // stop moving when the mouse button is released:
-                document.onmouseup = null;
-                document.onmousemove = null;
+            makeResizable() {
+                this.resizableHandle.onmousedown = (e) => this.initResize(e);
+
+                this.initResize = (e) => {
+                    e.preventDefault();
+                    this.isResizing = true;
+                    document.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+                    document.addEventListener('mouseup', () => this.stopResize());
+                };
+
+                this.handleMouseMove = (e) => {
+                    if (this.isResizing) {
+                        const offsetX = e.clientX - this.windowElement.offsetLeft;
+                        const offsetY = e.clientY - this.windowElement.offsetTop;
+
+                        const newWidth = Math.max(200, e.clientX - this.windowElement.offsetLeft + offsetX);
+                        const newHeight = Math.max(150, e.clientY - this.windowElement.offsetTop + offsetY);
+
+                        this.windowElement.style.width = newWidth + 'px';
+                        this.windowElement.style.height = newHeight + 'px';
+                    }
+                };
+
+                this.stopResize = () => {
+                    this.isResizing = false;
+                    document.removeEventListener('mousemove', (e) => this.handleMouseMove(e));
+                    document.removeEventListener('mouseup', () => this.stopResize());
+                };
             }
         }
+
+        // Create windows
+        const window1 = new Window("Window 1", "Content of Window 1", 300, 200);
+        const window2 = new Window("Window 2", "Content of Window 2", 400, 250);
 
         // Function to close the window
-        function closeWindow() {
-            document.getElementById("window").style.display = "none";
+        function closeWindow(element) {
+            const windowElement = element.closest('.window');
+            windowElement.style.display = "none";
         }
     </script>
 </body>
