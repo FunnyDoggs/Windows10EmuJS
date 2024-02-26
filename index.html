@@ -96,6 +96,8 @@
                 this.height = height;
                 this.isWindows10 = isWindows10;
                 this.isResizing = false;
+                this.offsetX = 0;
+                this.offsetY = 0;
 
                 this.createWindow();
                 this.makeDraggable();
@@ -127,29 +129,25 @@
             }
 
             makeDraggable() {
-                let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+                this.titleBar.onmousedown = (e) => this.initDrag(e);
 
-                this.titleBar.onmousedown = (e) => {
-                    if (!this.isResizing) {
-                        e.preventDefault();
-                        pos3 = e.clientX;
-                        pos4 = e.clientY;
-                        document.onmouseup = () => this.closeDragElement();
-                        document.onmousemove = (e) => this.elementDrag(e);
-                    }
-                };
-
-                this.elementDrag = (e) => {
+                this.initDrag = (e) => {
                     e.preventDefault();
-                    pos1 = pos3 - e.clientX;
-                    pos2 = pos4 - e.clientY;
-                    pos3 = e.clientX;
-                    pos4 = e.clientY;
-                    this.windowElement.style.top = (this.windowElement.offsetTop - pos2) + "px";
-                    this.windowElement.style.left = (this.windowElement.offsetLeft - pos1) + "px";
+                    this.offsetX = e.clientX - this.windowElement.getBoundingClientRect().left;
+                    this.offsetY = e.clientY - this.windowElement.getBoundingClientRect().top;
+                    document.onmouseup = () => this.stopDrag();
+                    document.onmousemove = (e) => this.drag(e);
                 };
 
-                this.closeDragElement = () => {
+                this.drag = (e) => {
+                    e.preventDefault();
+                    const x = e.clientX - this.offsetX;
+                    const y = e.clientY - this.offsetY;
+                    this.windowElement.style.left = `${x}px`;
+                    this.windowElement.style.top = `${y}px`;
+                };
+
+                this.stopDrag = () => {
                     document.onmouseup = null;
                     document.onmousemove = null;
                 };
@@ -161,20 +159,18 @@
                 this.initResize = (e) => {
                     e.preventDefault();
                     this.isResizing = true;
+                    this.offsetX = e.clientX - this.windowElement.getBoundingClientRect().width;
+                    this.offsetY = e.clientY - this.windowElement.getBoundingClientRect().height;
                     document.addEventListener('mousemove', (e) => this.handleMouseMove(e));
                     document.addEventListener('mouseup', () => this.stopResize());
                 };
 
                 this.handleMouseMove = (e) => {
                     if (this.isResizing) {
-                        const offsetX = e.clientX - this.windowElement.offsetLeft;
-                        const offsetY = e.clientY - this.windowElement.offsetTop;
-
-                        const newWidth = Math.max(200, e.clientX - this.windowElement.offsetLeft + offsetX);
-                        const newHeight = Math.max(150, e.clientY - this.windowElement.offsetTop + offsetY);
-
-                        this.windowElement.style.width = newWidth + 'px';
-                        this.windowElement.style.height = newHeight + 'px';
+                        const newWidth = Math.max(200, e.clientX - this.offsetX);
+                        const newHeight = Math.max(150, e.clientY - this.offsetY);
+                        this.windowElement.style.width = `${newWidth}px`;
+                        this.windowElement.style.height = `${newHeight}px`;
                     }
                 };
 
