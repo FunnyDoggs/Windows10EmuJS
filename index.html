@@ -209,6 +209,7 @@
                 this.width = width;
                 this.height = height;
                 this.isResizing = false;
+                this.isMoving = false;
                 this.offsetX = 0;
                 this.offsetY = 0;
                 this.isMaximized = false;
@@ -256,21 +257,25 @@
 
                 this.initDrag = (e) => {
                     e.preventDefault();
+                    this.isMoving = true;
                     this.offsetX = e.clientX - this.windowElement.getBoundingClientRect().left;
                     this.offsetY = e.clientY - this.windowElement.getBoundingClientRect().top;
-                    document.onmouseup = () => this.stopDrag();
+                    document.onmouseup = () => this.stopMove();
                     document.onmousemove = (e) => this.drag(e);
                 };
 
                 this.drag = (e) => {
                     e.preventDefault();
-                    const x = e.clientX - this.offsetX;
-                    const y = e.clientY - this.offsetY;
-                    this.windowElement.style.left = `${x}px`;
-                    this.windowElement.style.top = `${y}px`;
+                    if (this.isMoving) {
+                        const x = e.clientX - this.offsetX;
+                        const y = e.clientY - this.offsetY;
+                        this.windowElement.style.left = `${x}px`;
+                        this.windowElement.style.top = `${y}px`;
+                    }
                 };
 
-                this.stopDrag = () => {
+                this.stopMove = () => {
+                    this.isMoving = false;
                     document.onmouseup = null;
                     document.onmousemove = null;
                 };
@@ -484,7 +489,7 @@
         <img src="https://img.icons8.com/windows/96/000000/file.png" alt="File Explorer Icon">
     </div>
 
-    <div class="launcher-icon" onclick="openTextEdor()">
+    <div class="launcher-icon" onclick="openTextEditor()">
         <img src="https://img.icons8.com/windows/96/000000/edit-file.png" alt="Text Editor Icon">
     </div>
 
